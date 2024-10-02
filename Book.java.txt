@@ -1,0 +1,238 @@
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Book {
+    private JFrame frame;
+    private JTextField nameField;
+    private JComboBox<String> roomTypeComboBox;
+    private JComboBox<String> roomIdComboBox;
+    private JTextField bookDateField;
+    private JTextField checkOutDateField;
+    private JTextField totalBillField;
+    private JComboBox<String> billStatusComboBox;
+    private JButton btnSaveBooking;
+    private JButton btnShowBookedRooms;
+    private JButton btnGoToBooking;
+    private List<RoomBooking> bookedRooms;
+    private JPanel backgroundPanel;
+
+    public Book() {
+        bookedRooms = new ArrayList<>();
+        initialize();
+    }
+
+    private void initialize() {
+        frame = new JFrame("Hotel Booking System");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        backgroundPanel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                ImageIcon imageIcon = new ImageIcon("background.jpg");
+                Image image = imageIcon.getImage();
+                g.drawImage(image, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 50, 20));
+        buttonPanel.setOpaque(false);
+
+        btnGoToBooking = new JButton("Go to Booking");
+        customizeButton(btnGoToBooking);
+        btnGoToBooking.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showBookingScreen();
+            }
+        });
+        buttonPanel.add(btnGoToBooking);
+
+        btnShowBookedRooms = new JButton("Show Booked Rooms");
+        customizeButton(btnShowBookedRooms);
+        btnShowBookedRooms.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showBookedRoomsScreen();
+            }
+        });
+        buttonPanel.add(btnShowBookedRooms);
+
+        backgroundPanel.add(buttonPanel, BorderLayout.SOUTH);
+        frame.setContentPane(backgroundPanel);
+        frame.pack();
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
+    }
+
+    private void showBookedRoomsScreen() {
+        JPanel bookedRoomsPanel = new JPanel(new BorderLayout());
+
+        String[] columnNames = {"User Name", "Room Type", "Room ID", "Book Date", "Check Out Date", "Total Bill", "Bill Status"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        JTable table = new JTable(model);
+
+        for (RoomBooking booking : bookedRooms) {
+            Object[] rowData = {booking.getUserName(), booking.getRoomType(), booking.getRoomId(), booking.getBookDate(),
+                    booking.getCheckOutDate(), booking.getTotalBill(), booking.getBillStatus()};
+            model.addRow(rowData);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        bookedRoomsPanel.add(scrollPane, BorderLayout.CENTER);
+
+        JButton btnBackToHome = new JButton("Back to Home");
+        customizeButton(btnBackToHome);
+        btnBackToHome.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.setContentPane(backgroundPanel);
+                frame.revalidate();
+            }
+        });
+        bookedRoomsPanel.add(btnBackToHome, BorderLayout.SOUTH);
+
+        frame.setContentPane(bookedRoomsPanel);
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
+    }
+
+    private void showBookingScreen() {
+        JPanel bookingPanel = new JPanel(new GridLayout(8, 2, 10, 10));
+
+        bookingPanel.add(new JLabel("Name:"));
+        nameField = new JTextField();
+        bookingPanel.add(nameField);
+
+        bookingPanel.add(new JLabel("Room Type:"));
+        roomTypeComboBox = new JComboBox<>(new String[]{"Single", "Double", "Suite"});
+        bookingPanel.add(roomTypeComboBox);
+
+        bookingPanel.add(new JLabel("Room ID:"));
+        roomIdComboBox = new JComboBox<>(new String[]{"101", "102", "103", "201", "202", "203"});
+        bookingPanel.add(roomIdComboBox);
+
+        bookingPanel.add(new JLabel("Book Date (dd-MM-yyyy):"));
+        bookDateField = new JTextField();
+        bookingPanel.add(bookDateField);
+
+        bookingPanel.add(new JLabel("Check Out Date (dd-MM-yyyy):"));
+        checkOutDateField = new JTextField();
+        bookingPanel.add(checkOutDateField);
+
+        bookingPanel.add(new JLabel("Total Bill:"));
+        totalBillField = new JTextField();
+        bookingPanel.add(totalBillField);
+
+        bookingPanel.add(new JLabel("Bill Status:"));
+        billStatusComboBox = new JComboBox<>(new String[]{"Paid", "Unpaid"});
+        bookingPanel.add(billStatusComboBox);
+
+        btnSaveBooking = new JButton("Save Booking");
+        customizeButton(btnSaveBooking);
+        btnSaveBooking.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveBooking();
+            }
+        });
+        bookingPanel.add(btnSaveBooking);
+
+        JButton btnBackToHome = new JButton("Back to Home");
+        customizeButton(btnBackToHome);
+        btnBackToHome.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.setContentPane(backgroundPanel);
+                frame.revalidate();
+            }
+        });
+        bookingPanel.add(btnBackToHome);
+
+        frame.setContentPane(bookingPanel);
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
+    }
+
+    private void saveBooking() {
+        String userName = nameField.getText();
+        String roomType = (String) roomTypeComboBox.getSelectedItem();
+        String roomId = (String) roomIdComboBox.getSelectedItem();
+        String bookDate = bookDateField.getText();
+        String checkOutDate = checkOutDateField.getText();
+        double totalBill = Double.parseDouble(totalBillField.getText());
+        String billStatus = (String) billStatusComboBox.getSelectedItem();
+        RoomBooking booking = new RoomBooking(userName, roomType, roomId, bookDate, checkOutDate, totalBill, billStatus);
+        bookedRooms.add(booking);
+        JOptionPane.showMessageDialog(frame, "Booking Saved Successfully!");
+    }
+
+    public static void main(String[] args) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    new Book();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private class RoomBooking {
+        private String userName;
+        private String roomType;
+        private String roomId;
+        private String bookDate;
+        private String checkOutDate;
+        private double totalBill;
+        private String billStatus;
+
+        public RoomBooking(String userName, String roomType, String roomId, String bookDate, String checkOutDate, double totalBill, String billStatus) {
+            this.userName = userName;
+            this.roomType = roomType;
+            this.roomId = roomId;
+            this.bookDate = bookDate;
+            this.checkOutDate = checkOutDate;
+            this.totalBill = totalBill;
+            this.billStatus = billStatus;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public String getRoomType() {
+            return roomType;
+        }
+
+        public String getRoomId() {
+            return roomId;
+        }
+
+        public String getBookDate() {
+            return bookDate;
+        }
+
+        public String getCheckOutDate() {
+            return checkOutDate;
+        }
+
+        public double getTotalBill() {
+            return totalBill;
+        }
+
+        public String getBillStatus() {
+            return billStatus;
+        }
+    }
+
+    private void customizeButton(JButton button) {
+        button.setPreferredSize(new Dimension(180, 50));
+        button.setForeground(Color.WHITE);
+        button.setBackground(new Color(59, 89, 182));
+        button.setFocusPainted(false);
+        button.setFont(new Font("Tahoma", Font.BOLD, 14));
+        button.setBorder(BorderFactory.createLineBorder(new Color(46, 88, 196), 2));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }
+}
